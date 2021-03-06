@@ -1,0 +1,4 @@
+sno,sname,saddress,sage
+1,raj,hyd,22
+2,nag,ban,34
+3,junnu,dhilhi,12

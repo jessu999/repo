@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="9a01e1fd-3b9e-49c5-baf0-7d3c7ceaa805" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="4363bb31-fccb-461b-8ef3-d7f6b82ff38d" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="amma143*" database="lalitha"/>
+	</db:config>
+	<flow name="file-integration" doc:id="650708fe-7a1d-46ee-af43-2100c5807e84" >
+		<file:listener doc:name="On New or Updated File" doc:id="59252561-8ad6-4d0a-bd4a-3e2128402792" config-ref="File_Config" directory="C:\Users\NAGARAJU\Documents\csv" autoDelete="true" outputMimeType="application/csv">
+			<scheduling-strategy >
+				<fixed-frequency frequency="10" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</file:listener>
+		<ee:transform doc:name="Transform Message" doc:id="3dcb99c2-23d2-4ae0-86f1-dec257eb1551" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	sno: payload01.sno,
+	sname: payload01.sname,
+	sage: payload01.sage,
+	saddress: payload01.saddress
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-insert doc:name="Bulk insert" doc:id="d0ca6b2f-d914-4b07-9fce-1fe4bd27dcf9" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into student (sno,sname,saddress,sage)values(:sno,:sname,:saddress,:sage)]]></db:sql>
+		</db:bulk-insert>
+		<db:select doc:name="Select" doc:id="b1670d0d-0146-4cb2-82f1-380a06f97da8" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from student]]></db:sql>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="fd982ce9-22a7-4951-982e-84c31ea93188" message="#[payload]"/>
+	</flow>
+</mule>

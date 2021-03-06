@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="rrr" format="csv">
+      <types:shape format="weave" example="examples/demo csv-1.txt"><![CDATA[%dw 2.0
+
+type rrr = Array<{|  sno: String,   sname: String,   saddress: String,   sage: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0",
+"separator": ","}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#3dcb99c2-23d2-4ae0-86f1-dec257eb1551">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="rrr"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

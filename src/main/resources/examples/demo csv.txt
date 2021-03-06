@@ -1,0 +1,4 @@
+s.no,s.name,s.address,s.age
+1,raj,hyd,22
+2,nag,ban,34
+3,junnu,dhilhi,12
