@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e8587dad-c2ad-4faa-b25a-b264472d99cf" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="4baae849-9732-4491-b02c-51e4c3700b5f" >
+		<http:listener-connection host="0.0.0.0" port="5050" />
+	</http:listener-config>
+	<http:listener-config name="HTTP_Listener_config2" doc:name="HTTP Listener config" doc:id="3e4be80f-e2aa-4d82-95cc-3b23a644c36e" >
+		<http:listener-connection host="0.0.0.0" port="2025" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="bedd2540-54f2-4784-9a0e-a053b469f3d7" >
+		<http:request-connection host="localhost" port="2025" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="54b7d85b-a810-451f-8c63-aa1cf8ab7aab" >
+		<http:request-connection host="localhost" port="5050" />
+	</http:request-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="6f9566fd-117e-4bfb-a249-6d3b18ab84c5" >
+		<db:my-sql-connection host="localhost" port="3306" user="nageswarao" password="amma143*" database="lalitha" />
+	</db:config>
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="5fb9ba66-1daa-4182-b7c3-5c67a37489ab" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="amma143*" database="lalitha" />
+	</db:config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="34c1076a-925e-4a8d-84b2-9a7019503844" >
+		<jms:active-mq-connection >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<flow name="http-intrafaceFlow" doc:id="b84644f4-ebca-4e81-bde1-e256f945db9c" >
+		<http:listener doc:name="Listener" doc:id="d05c6423-c070-47fc-93e8-887da4a0d81a" config-ref="HTTP_Listener_config" path="/get/{myname}"/>
+		<foreach doc:name="For Each" doc:id="19de71d2-1814-4fbd-b472-44f10f543e49" >
+			<logger level="INFO" doc:name="Logger" doc:id="b69a849e-3796-4196-a9f9-2f9aa1b3e752" message="#[message.payload.name]" />
+		</foreach>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="ece52acf-e04d-40ae-9fb7-987e198a0fd1" >
+			<route >
+				<http:request method="POST" doc:name="Request" doc:id="a0e9afcb-400f-4978-81b1-408f18a565f2" config-ref="HTTP_Request_configuration" path="/d1"/>
+			</route>
+			<route >
+				<http:request method="POST" doc:name="Request" doc:id="09f61bea-2eab-42b1-8d83-83c72c57a015" config-ref="HTTP_Request_configuration1" path="/d2"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="4a5e0311-5d8e-4bfa-899d-e3452ee63c80" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload..payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="39a02805-efc5-472a-8b98-7a7731c2332e" message="#[payload]"/>
+	</flow>
+	<flow name="http-intrafaceFlow1" doc:id="9d5fb8c8-b8e1-4d09-8f73-16b077d732d8" >
+		<http:listener doc:name="Listener" doc:id="c37c3786-f457-4818-86e0-5e6401ade699" config-ref="HTTP_Listener_config2" path="/d1" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="5cc5317d-9a1c-41ff-adbf-919bc6bab805" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"success":"procesed"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="http-intrafaceFlow2" doc:id="4dbf7798-29bd-47a5-b981-973d8dcd539d" >
+		<http:listener doc:name="Listener" doc:id="56772e6e-d028-4766-97f9-ae6590f77f32" config-ref="HTTP_Listener_config1" path="/d2" allowedMethods="POST"/>
+		<db:select doc:name="Select" doc:id="af6c416b-1c14-4255-8c4d-53b46ff120c9" config-ref="Database_Config1">
+			<db:sql ><![CDATA[select sname from student ]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="08f207a1-ee13-449a-86dd-9b7cc6a866e3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
